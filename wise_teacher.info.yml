@@ -1,0 +1,10 @@
+type: module
+name: Wise Teacher
+description: '为师的厝开放题库定制和扩展书籍相关功能'
+package: Custom
+tags:
+ - book
+
+version: '8.x.1'
+core: '8.x'
+project: 'wise_teacher'

@@ -1,0 +1,62 @@
+<?php
+
+use Drupal\book\BookManager;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+
+/**
+ * form_alter 钩子
+ * 在渲染书籍添加子页面时根据全局参数调整默认行为
+ * @param $form
+ * @param FormStateInterface $form_state
+ * @param $form_id
+ */
+function wise_teacher_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+  if ($form_id == "node_book_form") {
+    // 教学科目 field_jiaoxuekemu
+    if (isset($_GET["kemu"]) && is_numeric($_GET["kemu"])) {
+      $form["field_jiaoxuekemu"]["widget"]["#default_value"] = intval($_GET["kemu"]);
+    }
+
+    // 出版社名 field_chubansheming
+    if (isset($_GET["chuban"]) && is_numeric($_GET["chuban"])) {
+      $form["field_chubansheming"]["widget"]["#default_value"] = intval($_GET["chuban"]);
+    }
+
+    // 教学年级 field_jiaoxuenianji
+    if (isset($_GET["nianji"]) && is_numeric($_GET["nianji"])) {
+      $form["field_jiaoxuenianji"]["widget"]["#default_value"] = intval($_GET["nianji"]);
+    }
+
+    // 分布学段 field_fenbuxueduan
+    if (isset($_GET["xueduan"]) && is_numeric($_GET["xueduan"])) {
+      $form["field_fenbuxueduan"]["widget"]["#default_value"] = intval($_GET["xueduan"]);
+    }
+  }
+}
+
+/**
+ * Implements hook_node_links_alter().
+ * 实现钩子 _node_links_alter() 重写请求地址
+ * @param array $links
+ * @param NodeInterface $node
+ * @param array $context
+ */
+function wise_teacher_node_links_alter(array &$links, NodeInterface $node, array &$context)
+{
+  if (isset($links['book']['#links']['book_add_child'])) {
+    $child_type = \Drupal::config('book.settings')->get('child_type');
+    $links['book']['#links']['book_add_child'] = [
+      'title' => t('Add child page'),
+      'url' => Url::fromRoute('node.add', ['node_type' => $child_type], ['query' => [
+        'parent' => $node->id(),
+        'kemu' => $node->get("field_jiaoxuekemu")->getValue()[0]['value'],
+        'chuban' => $node->get("field_chubansheming")->getValue()[0]['value'],
+        'nianji' => $node->get("field_jiaoxuenianji")->getValue()[0]['value'],
+        'xueduan' => $node->get("field_fenbuxueduan")->getValue()[0]['value']
+      ]])
+    ];
+  }
+}
